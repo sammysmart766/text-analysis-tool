@@ -1,0 +1,2 @@
+Python is a useful programming language. I am learning how to read and analyze text files.
+The company reported a profit of $5 million.
