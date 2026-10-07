@@ -1,3 +1,4 @@
+import json
 import nltk
 import os
 os.makedirs("results", exist_ok=True)
@@ -183,6 +184,7 @@ articleWordsCleansed = cleanseWordList(wordsPosTagged)
 
 # Generate word cloud
 separator = " "
+wordCloudFilePath = "results/wordcloud.png"
 
 wordcloud = WordCloud(
     width=1000,
@@ -192,10 +194,27 @@ wordcloud = WordCloud(
     collocations=False
 ).generate(separator.join(articleWordsCleansed))
 
-wordcloud.to_file("results/wordcloud.png")
+wordcloud.to_file(wordCloudFilePath)
 
 # Run Sentiment Analysis
 sentimentResult = sentimentAnalyzer.polarity_scores(articleTextRaw)
 
-print(sentimentResult)
+# Collate analyses into one dictionary
+finalResult = {
+    "username": username,
+    "data": {
+        "keySentences": keySentences,
+        "wordsPerSentence": round(wordsPerSentence, 1),
+        "sentiment": sentimentResult,
+        "wordCloudFilePath": wordCloudFilePath
+    },
+    "metadata": {
+        "sentencesAnalyzed": len(articleSentences),
+        "wordsAnalyzed": len(articleWordsCleansed)
+    }
+}
+
+finalResultJson = json.dumps(finalResult, indent=4, ensure_ascii=False)
+
+print(finalResultJson)
 print('\nDone')
