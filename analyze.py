@@ -1,18 +1,22 @@
 import nltk
+import os
+os.makedirs("results", exist_ok=True)
+
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet, stopwords
-
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from random_username.generate import generate_username
 from nltk.tokenize import word_tokenize, sent_tokenize
+from wordcloud import WordCloud
 import re
-
 
 nltk.download("wordnet")
 nltk.download("averaged_perceptron_tagger_eng")
 nltk.download("stopwords")
+nltk.download("vader_lexicon")
 
 wordLemmatizer = WordNetLemmatizer()
-
+sentimentAnalyzer = SentimentIntensityAnalyzer()
 stopWords = set(stopwords.words("english"))
 
 
@@ -49,6 +53,7 @@ def Getusername():
         + str(maxAttempts)
         + " attempts. Assigning username instead."
     )
+
     return generate_username(1)[0]
 
 
@@ -60,6 +65,7 @@ def getArticleText():
     f = open("files/articles.txt", "r")
     rawText = f.read()
     f.close()
+
     return rawText.replace("\n", " ").replace("\r", "")
 
 
@@ -77,7 +83,6 @@ def tokenizeWords(sentences):
 
 
 # Get key sentences based on search patterns
-
 def extractKeySentences(sentences, searchPattern):
     matchedSentences = []
 
@@ -89,7 +94,6 @@ def extractKeySentences(sentences, searchPattern):
 
 
 # Get the average words per sentence, excluding punctuation
-
 def getWordsPerSentence(sentences):
     numSentences = len(sentences)
 
@@ -106,7 +110,6 @@ def getWordsPerSentence(sentences):
 
 # Convert part of speech from pos_tag() function
 # into wordnet compatible pos tag
-
 posToWordnetTag = {
     "J": wordnet.ADJ,
     "V": wordnet.VERB,
@@ -125,9 +128,9 @@ def treebankPosToWordnetPos(partOfSpeech):
 
 
 # Filter raw tokenized words to only include valid English words
-
 def cleanseWordList(posTaggedWordTuples):
     cleansedWords = []
+
     invalidWordPattern = "[^a-zA-Z-+]"
 
     for posTaggedWordTuple in posTaggedWordTuples:
@@ -152,21 +155,16 @@ def cleanseWordList(posTaggedWordTuples):
 
 
 # Get user details
-
 welcomeUser()
 username = Getusername()
 greetuser(username)
 
-
 # Extract and tokenize text
-
 articleTextRaw = getArticleText()
 articleSentences = tokenizeSentences(articleTextRaw)
 articleWords = tokenizeWords(articleSentences)
 
-
 # Get analytics
-
 stockSearchPattern = (
     "[0-9]|[%$€£]|thousand|million|billion|trillion|profit|loss"
 )
@@ -183,13 +181,21 @@ wordsPosTagged = nltk.pos_tag(articleWords)
 articleWordsCleansed = cleanseWordList(wordsPosTagged)
 
 
-# Print for testing
+# Generate word cloud
+separator = " "
 
-print("GOT:")
-print(articleTextRaw)
-print(articleSentences)
-print(articleWords)
-print(wordsPosTagged)
-print(keySentences)
-print(wordsPerSentence)
-print(articleWordsCleansed)
+wordcloud = WordCloud(
+    width=1000,
+    height=700,
+    background_color="white",
+    colormap="Set3",
+    collocations=False
+).generate(separator.join(articleWordsCleansed))
+
+wordcloud.to_file("results/wordcloud.png")
+
+# Run Sentiment Analysis
+sentimentResult = sentimentAnalyzer.polarity_scores(articleTextRaw)
+
+print(sentimentResult)
+print('\nDone')
