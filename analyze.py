@@ -1,15 +1,19 @@
 import nltk
 from nltk.stem import WordNetLemmatizer
-from nltk.corpus import wordnet
+from nltk.corpus import wordnet, stopwords
 
 from random_username.generate import generate_username
 from nltk.tokenize import word_tokenize, sent_tokenize
 import re
 
+
 nltk.download("wordnet")
 nltk.download("averaged_perceptron_tagger_eng")
+nltk.download("stopwords")
 
 wordLemmatizer = WordNetLemmatizer()
+
+stopWords = set(stopwords.words("english"))
 
 
 def welcomeUser():
@@ -135,6 +139,7 @@ def cleanseWordList(posTaggedWordTuples):
         if (
             not re.search(invalidWordPattern, cleansedWord)
             and len(cleansedWord) > 1
+            and cleansedWord not in stopWords
         ):
             cleansedWords.append(
                 wordLemmatizer.lemmatize(
