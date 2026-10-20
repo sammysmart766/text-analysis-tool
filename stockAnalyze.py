@@ -30,16 +30,19 @@ def getEarningsDate(tickerSymbol):
     company = yf.Ticker(tickerSymbol)
     earningsDates = company.get_earnings_dates(limit=12)
     futureDates = earningsDates[earningsDates.index.date >= date.today()]
-    return futureDates
+
+    return [earningsDate.strftime("%Y-%m-%d") for earningsDate in futureDates.index]
+
 
 def getCompanyNews(tickerSymbol):
     articles = yf.Search(tickerSymbol, news_count=10).news
-    return articles
+   
 
     for article in articles:
         print(article["title"])
         print(article["link"])
         print()
+    return articles
         
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36' 
@@ -56,14 +59,22 @@ def extractCompanyNewsArticle(companynews):
 def getCompanyStockInfo(tickerSymbol):
     company = yf.Ticker(tickerSymbol)
     basicInfo = extractBasicInfo(company.info)
-
-    
     priceHistory = getDailyPriceHistory(tickerSymbol)
     earningsDate = getEarningsDate(tickerSymbol)
     companynews = getCompanyNews(tickerSymbol)
     companyNewsAllText = extractCompanyNewsArticle(companynews)
     companyNewsAnalyzed = analyze.analyzeText(companyNewsAllText)
-    finalResultJson = json.dumps(companyNewsAnalyzed, indent=4, ensure_ascii=False)
-    print(finalResultJson)
+    
+    
+    
+    finalStockAnlysis ={
+        'basicInfo':basicInfo,
+        'priceHistory':priceHistory.to_dict(orient="records"),
+        'earningsDate':earningsDate,
+        'companynews':companynews,
+        'companyNewsAnalyzed':companyNewsAnalyzed   
+    }
+    return finalStockAnlysis
 
-getCompanyStockInfo("MSFT")
+#companyStockAnalysis = getCompanyStockInfo("MSFT")
+#print(json.dumps(companyStockAnalysis, indent=4, ensure_ascii=False))
