@@ -2,6 +2,8 @@ import yfinance as yf
 import requests
 from datetime import date
 from bs4 import BeautifulSoup
+import analyze
+import json
 
 def extractBasicInfo(data):
     keysToExtract = [
@@ -47,10 +49,9 @@ def extractCompanyNewsArticle(companynews):
         url = article['link']
         page = requests.get(url, headers=headers)
         soup = BeautifulSoup(page.text, "html.parser")
-        if soup.find_all(string = 'continue reading'):
-            print('Tag found = should skip')
-        else:
-            print('Tag not found = dont skip')
+        if not soup.find_all(string = 'continue reading'): 
+            websiteText = soup.get_text(" ", strip=True)
+        return websiteText
 
 def getCompanyStockInfo(tickerSymbol):
     company = yf.Ticker(tickerSymbol)
@@ -60,6 +61,9 @@ def getCompanyStockInfo(tickerSymbol):
     priceHistory = getDailyPriceHistory(tickerSymbol)
     earningsDate = getEarningsDate(tickerSymbol)
     companynews = getCompanyNews(tickerSymbol)
-    extractCompanyNewsArticle(companynews)
+    companyNewsAllText = extractCompanyNewsArticle(companynews)
+    companyNewsAnalyzed = analyze.analyzeText(companyNewsAllText)
+    finalResultJson = json.dumps(companyNewsAnalyzed, indent=4, ensure_ascii=False)
+    print(finalResultJson)
 
 getCompanyStockInfo("MSFT")
