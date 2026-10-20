@@ -1,6 +1,7 @@
 import yfinance as yf
 import requests
 from datetime import date
+from bs4 import BeautifulSoup
 
 def extractBasicInfo(data):
     keysToExtract = [
@@ -41,11 +42,15 @@ def getCompanyNews(tickerSymbol):
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36' 
 }
-def extractCompanyNewsArticle(companynews):
-    url = companynews[0]['link']
-    page = requests.get(url, headers=headers)
-    print(page.text)
-    #print(url)
+def extractCompanyNewsArticle(companynews): 
+    for article in companynews:
+        url = article['link']
+        page = requests.get(url, headers=headers)
+        soup = BeautifulSoup(page.text, "html.parser")
+        if soup.find_all(string = 'continue reading'):
+            print('Tag found = should skip')
+        else:
+            print('Tag not found = dont skip')
 
 def getCompanyStockInfo(tickerSymbol):
     company = yf.Ticker(tickerSymbol)
