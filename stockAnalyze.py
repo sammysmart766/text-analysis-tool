@@ -56,6 +56,9 @@ def extractCompanyNewsArticle(companynews):
 def getCompanyStockInfo(tickerSymbol):
     company = yf.Ticker(tickerSymbol)
     basicInfo = extractBasicInfo(company.info)
+    #check if ticker symbol exists
+    if not basicInfo['longName']:
+        raise NameError('Could not find stock info, symbol may be delisted or does not exist')
     priceHistory = getDailyPriceHistory(tickerSymbol)
     earningsDate = getEarningsDate(tickerSymbol)
     companynews = getCompanyNews(tickerSymbol)
