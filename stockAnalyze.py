@@ -36,13 +36,10 @@ def getEarningsDate(tickerSymbol):
 
 def getCompanyNews(tickerSymbol):
     articles = yf.Search(tickerSymbol, news_count=10).news
-   
-
-    for article in articles:
-        print(article["title"])
-        print(article["link"])
-        print()
-    return articles
+    return [
+        {"title": article["title"], "link": article["link"]}
+        for article in articles
+    ]
         
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36' 
